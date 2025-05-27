@@ -1,0 +1,44 @@
+{% extends 'index.html' %}
+
+<!-- C -->
+{% load static %}
+
+<!-- C -->
+{% block title %} PDF to Image Converter {% endblock %}
+
+<!-- C -->
+{% block extra_css %}
+<link rel="stylesheet" href="{% static './pdf_to_image/styles.css' %}" />
+{% endblock %}
+
+<!-- C -->
+{% block content %}
+<h1>Convert PDF to Vertical Image</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="pdf" accept=".pdf" required />
+    <button type="submit">Convert</button>
+</form>
+
+{% if image_url %}
+<div id="display">
+    <div>
+        <button class="btn btn-warning" onclick="clearDisplay()">Clear</button>
+    </div>
+    <hr />
+    <h3>Converted Image:</h3>
+    <a href="{{ image_url }}" download>Download Image</a>
+    <br /><br />
+    <img src="{{ image_url }}" alt="Converted" style="max-width: 100%" />
+</div>
+{% endif %}
+
+<script>
+    function clearDisplay() {
+        const displaySection = document.querySelector("#display");
+        if (displaySection) {
+            displaySection.remove();
+        }
+    }
+</script>
+{% endblock %}

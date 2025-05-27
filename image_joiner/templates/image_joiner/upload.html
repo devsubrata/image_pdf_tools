@@ -1,0 +1,105 @@
+{% extends 'index.html' %}
+<!-- C -->
+{% load static %}
+<!-- C -->
+{% block title %}Join Images{% endblock %}
+
+<!-- C -->
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="{% static './image_joiner/styles.css' %}" />
+{% endblock %}
+
+<!-- C -->
+{% block content %}
+<h2 class="mb-4">Upload Images to Join Vertically or to Create PDF</h2>
+
+<form method="post" enctype="multipart/form-data" class="mb-3">
+    {% csrf_token %}
+    <!-- Hidden file input -->
+    <input type="file" name="images" id="fileInput" multiple accept="image/*" style="display: none" />
+    <!-- Visible upload button -->
+    <button type="button" id="uploadBtn" class="btn btn-primary mb-2">Upload Images</button>
+    <!-- Show selected files count -->
+    <div class="container">
+        <div id="fileCount" class="mb-3"></div>
+        <div id="fileList" class="mb-3"></div>
+        <div class="radio-button-group" style="display: none; margin-bottom: 10px">
+            <div class="radio-btn"><input value="images_to_image" type="radio" name="image-pdf" id="images_to_image" />&nbsp;Images to image</div>
+            <div class="radio-btn"><input value="images_to_pdf" type="radio" name="image-pdf" id="images_to_pdf" />&nbsp;Images to pdf</div>
+        </div>
+        <!-- Submit button (hidden initially) -->
+        <button type="submit" id="joinBtn" class="btn btn-success" style="display: none">Join</button>
+    </div>
+</form>
+
+<hr />
+
+<!-- result from images to image conversion -->
+{% if joined_image_url %}
+<div id="display">
+    <div class="mb-4">
+        <button class="btn btn-warning" onclick="clearDisplay()">Clear</button>
+    </div>
+    <!-- Download button -->
+    <a href="{{ joined_image_url }}" download="joined_image.jpg" class="btn btn-outline-secondary mb-3"> Download Joined Image </a>
+    <h3>Joined Image:</h3>
+    <img src="{{ joined_image_url }}" alt="Joined Image" class="img-fluid mb-3" />
+</div>
+{% endif %}
+
+<!-- result from images to pdf conversion -->
+{% if joined_pdf_url %}
+<div id="display">
+    <div class="mb-4">
+        <button class="btn btn-warning" onclick="clearDisplay()">Clear</button>
+    </div>
+    <p>PDF created successfully: <a href="{{ joined_pdf_url }}" target="_blank">Download PDF</a></p>
+</div>
+{% endif %}
+
+<!-- Error Message -->
+{% if error_message %}
+<div class="alert alert-danger" role="alert">{{ error_message }}</div>
+{% endif %}
+
+<script>
+    const uploadBtn = document.getElementById("uploadBtn");
+    const fileInput = document.getElementById("fileInput");
+    const fileCount = document.getElementById("fileCount");
+    const joinBtn = document.getElementById("joinBtn");
+    const radioBtnsDiv = document.querySelector(".radio-button-group");
+
+    // When upload button clicked, trigger file input click
+    uploadBtn.addEventListener("click", () => {
+        fileInput.click();
+    });
+
+    // Show selected files count and toggle Join button visibility
+    fileInput.addEventListener("change", () => {
+        const files = fileInput.files;
+        if (files.length > 0) {
+            // Create a list of file names
+            let listHtml = '<ul class="list-group">';
+            for (let i = 0; i < files.length; i++) {
+                listHtml += `<li class="list-group-item">${files[i].name}</li>`;
+            }
+            listHtml += "</ul>";
+            fileCount.textContent = files.length + (files.length === 1 ? " file selected" : " files selected");
+
+            fileList.innerHTML = listHtml;
+            joinBtn.style.display = "inline-block"; // Show the Join button
+            radioBtnsDiv.style.display = "block";
+        } else {
+            fileList.innerHTML = "";
+            joinBtn.style.display = "none"; // Hide Join button if no files selected
+        }
+    });
+    function clearDisplay() {
+        const displaySection = document.querySelector("#display");
+        if (displaySection) {
+            displaySection.remove();
+        }
+    }
+</script>
+{% endblock %}

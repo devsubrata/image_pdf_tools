@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+.Python
+
+# VS Code / PyCharm / other IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Django
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+# media/downloads/
+# staticfiles/
+# static/
+local_settings.py
+
+# Environment variables
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# yt-dlp temporary files
+*.part
+*.f*temp*
+*.ytdl
+*.ytdl-metadata.json
+*.info.json
+
+# Frontend (if using JS/TS or bundlers)
+node_modules/
+dist/
+build/
+
+# Testing
+.coverage
+htmlcov/
+pytest_cache/
+.pytest_cache/
+.tox/
+.nox/
+
+# MyPy & linting
+.mypy_cache/
+.dmypy.json
+.pyre/
+pylint-report.txt
+flake8-report.txt
+
+FolderStructures.txt
+media/
+node_modules/ 
+dist/

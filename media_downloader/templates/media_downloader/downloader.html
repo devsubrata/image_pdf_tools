@@ -1,0 +1,168 @@
+{% extends 'index.html' %}
+
+<!-- C -->
+{% load static %}
+
+<!-- C -->
+{% block title %} Media Downloader {% endblock %}
+
+<!-- C -->
+{% block extra_css %}
+<link rel="stylesheet" href="{% static './media_downloader/styles.css' %}" />
+{% endblock %}
+
+<!-- C -->
+{% block content %}
+<div class="container" id="mediaDownloaderContainer">
+    <div class="title-bar" id="titleBar">
+        <div class="title-bar-text">Media Downloader by Subrata K. Dev</div>
+        <div class="control-buttons">
+            <button class="control-button minimize">—</button>
+            <button class="control-button close">X</button>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <h1>Media Downloader (audio/video)</h1>
+
+        <input type="text" id="mediaURL" placeholder="Paste media URL here..." />
+        <select id="formatChoice">
+            <option value="video-mp4">Video (.mp4)</option>
+            <option value="audio-mp3">Audio (.mp3)</option>
+        </select>
+
+        <button class="btn-download">Download</button>
+
+        <div class="button-group">
+            <button class="clr-btn">Clear</button>
+            <button>SetOutDir</button>
+            <button>OpenOutDir</button>
+        </div>
+
+        <div class="output-area"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const container = document.getElementById("mediaDownloaderContainer");
+        const titleBar = container.querySelector("#titleBar");
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        // Function to handle dragging logic
+        const handleDragMove = (clientX, clientY) => {
+            let newX = clientX - offsetX;
+            let newY = clientY - offsetY;
+
+            // Keep the element within the viewport boundaries
+            const maxX = window.innerWidth - container.offsetWidth;
+            const maxY = window.innerHeight - container.offsetHeight;
+
+            newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+
+            container.style.left = `${newX}px`;
+            container.style.top = `${newY}px`;
+            container.style.transform = "none"; // Remove transform once dragging starts
+        };
+
+        // Mouse event listeners for desktop dragging
+        titleBar.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            // Calculate offset relative to the element's top-left corner
+            offsetX = e.clientX - container.getBoundingClientRect().left;
+            offsetY = e.clientY - container.getBoundingClientRect().top;
+            titleBar.style.cursor = "grabbing"; // Change cursor on the title bar
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            handleDragMove(e.clientX, e.clientY);
+        });
+
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+            titleBar.style.cursor = "grab"; // Reset cursor on the title bar
+        });
+
+        // Basic functionality for control buttons (for demonstration)
+        const closeButton = document.querySelector(".control-button.close");
+        const minimizeButton = document.querySelector(".control-button.minimize");
+
+        closeButton.addEventListener("click", () => {
+            container.style.display = "none"; // Hide the window
+            console.log("Close button clicked!");
+        });
+
+        minimizeButton.addEventListener("click", () => {
+            // In a real app, this would minimize to a taskbar or similar.
+            // Here, we'll just toggle a "minimized" state for visual effect.
+            if (container.style.height === "50px") {
+                // Example minimized height
+                container.style.height = ""; // Restore original height
+                container.style.overflow = "visible";
+                console.log("Window maximized!");
+            } else {
+                container.style.height = "50px"; // Minimize height
+                container.style.overflow = "hidden";
+                console.log("Window minimized!");
+            }
+        });
+    });
+
+    document.querySelector(".clr-btn").addEventListener("click", () => {
+        document.querySelector(".output-area").innerHTML = "";
+        document.querySelector("#mediaURL").value = "";
+        docu;
+    });
+
+    document.querySelector(".btn-download").addEventListener("click", () => {
+        const url = document.getElementById("mediaURL").value.trim();
+        const format = document.getElementById("formatChoice").value;
+        const outputArea = document.querySelector(".output-area");
+
+        if (!url) {
+            outputArea.innerHTML = "<p style='color:red;'>Please enter a media URL.</p>";
+            return;
+        }
+
+        outputArea.innerHTML = "<p style='color:white;'>Downloading... Please wait.</p>";
+
+        fetch("/media-downloader/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: `media_url=${encodeURIComponent(url)}&format=${format}`,
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.status === "success") {
+                    outputArea.innerHTML = `
+                    <p style='color:green; font-weight:bold;'>Download completed successfully!</p>
+                    <pre>${data.message}</pre>
+                    <p>${data.filename}</p>
+                    <p>${data.filepath}</p>
+                `;
+                } else {
+                    outputArea.innerHTML = "<p style='color:red;'>Error occurred:</p><pre>" + data.message + "</pre>";
+                }
+            })
+            .catch((error) => {
+                outputArea.innerHTML = "<p style='color:red;'>Unexpected error: " + error + "</p>";
+            });
+    });
+
+    // Helper to get CSRF token
+    function getCSRFToken() {
+        const name = "csrftoken"; // Name of the CSRF cookie Django sets
+        const cookieValue = document.cookie
+            .split("; ") // Split all cookies into individual name=value strings
+            .find((row) => row.startsWith(name + "=")) // Find the one that starts with 'csrftoken='
+            ?.split("=")[1]; // Split it into [name, value], and get the value
+        return cookieValue || ""; // Return value or empty string if not found
+    }
+</script>
+{% endblock %}
