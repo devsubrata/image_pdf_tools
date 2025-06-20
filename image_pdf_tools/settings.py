@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'image_joiner',
     'pdf_to_image',
     'media_downloader',
+    'youtube_api'
 ]
 
 MIDDLEWARE = [

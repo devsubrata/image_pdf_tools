@@ -26,6 +26,7 @@ urlpatterns = [
     path('image-joiner/', include('image_joiner.urls')),
     path('pdf-to-image/', include('pdf_to_image.urls')),
     path('media-downloader/', include('media_downloader.urls')),
+    path('youtube-api/', include('youtube_api.urls')),
 ]
 
 if settings.DEBUG:

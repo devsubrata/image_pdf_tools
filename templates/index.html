@@ -5,14 +5,69 @@
     <head>
         <meta charset="UTF-8" />
         <title>{% block title %}Image & PDF Tools{% endblock %}</title>
-        <!-- Global Styles -->
         <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+        <style>
+            nav {
+                background-color: rgb(16, 76, 243);
+                padding: 12px 20px;
+                display: flex;
+                gap: 20px;
+                align-items: center;
+                position: relative;
+            }
+            nav a {
+                font-weight: bold;
+                color: #fff;
+                padding: 5px;
+            }
+            .dropdown {
+                position: relative;
+            }
+            .dropdown > a::after {
+                content: " ▼";
+                font-size: 0.75em;
+            }
+            .dropdown-content {
+                display: none;
+                position: absolute;
+                background-color: rgb(53, 104, 245);
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                padding: 10px;
+                top: 20px;
+                left: 0;
+                min-width: 210px;
+                z-index: 1000;
+            }
+
+            .dropdown-content a {
+                display: block;
+                padding: 6px 10px;
+                color: #fff;
+                font-weight: normal;
+            }
+
+            .dropdown:hover .dropdown-content {
+                display: block;
+            }
+        </style>
         {% block extra_css %}{% endblock %}
     </head>
     <body>
         <nav>
-            <a href="{% url 'home' %}">Home</a> | <a href="/image-joiner/">Image Joiner</a> | <a href="/pdf-to-image/">PDF to Image</a> |
+            <a href="{% url 'home' %}">Home</a>
+            <a href="/image-joiner/">Image Joiner</a>
+            <a href="/pdf-to-image/">PDF to Image</a>
             <a href="/media-downloader/">Download Media</a>
+
+            <div class="dropdown">
+                <a href="#">YouTube</a>
+                <div class="dropdown-content">
+                    <a href="/youtube-api/top_youtube_songs">Top YouTube Songs</a>
+                    <a href="/youtube-api/">Top Songs by Artist</a>
+                </div>
+            </div>
         </nav>
 
         <main>{% block content %}{% endblock %}</main>

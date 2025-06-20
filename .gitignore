@@ -68,3 +68,5 @@ FolderStructures.txt
 media/
 node_modules/ 
 dist/
+playground/
+

@@ -28,7 +28,7 @@ def download_media(request):
 
         if media_type == "video-mp4":
             ydl_opts = {
-                "format": 'bestvideo[ext=mp4][vcodec^=avc1]+bestaudio[ext=m4a]/best[ext=mp4]',
+                "format": '270+bestaudio/best[ext=mp4]',
                 "outtmpl": outtmpl,
                 'postprocessors': [{
                     'key': 'FFmpegVideoConvertor',

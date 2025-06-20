@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Top English Songs</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+        <style>
+            body {
+                padding-top: 40px;
+                background-color: #f8f9fa;
+            }
+
+            .song-list li {
+                margin-bottom: 1rem;
+                padding: 1rem;
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+            }
+
+            .song-list span {
+                font-weight: bold;
+                color: #6f42c1;
+            }
+
+            .song-list a {
+                font-weight: 500;
+                color: #0d6efd;
+                text-decoration: none;
+            }
+
+            .song-list a:hover {
+                text-decoration: underline;
+            }
+
+            .pagination {
+                justify-content: center;
+            }
+
+            #spinner {
+                width: 8rem;
+                height: 8rem;
+                /* margin: 0 auto; */
+            }
+            #loadingText {
+                margin-top: 0.5rem;
+                font-weight: 600;
+                color: #0d6efd;
+                font-size: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="text-center">Top English Songs by Views</h1>
+            <div><a href="{% url 'home' %}">Home</a></div>
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search for English songs..." />
+                </div>
+                <div class="col-md-2">
+                    <input
+                        type="number"
+                        id="resultCount"
+                        class="form-control"
+                        min="50"
+                        max="500"
+                        step="10"
+                        value="50"
+                        placeholder="Number of results"
+                        title="Select between 50 and 500 results"
+                    />
+                </div>
+                <div class="col-md-3">
+                    <select id="sortSelect" class="form-select">
+                        <option value="desc">Sort by Views: High to Low</option>
+                        <option value="asc">Sort by Views: Low to High</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100" id="loadBtn">Load</button>
+                </div>
+            </div>
+            <!-- Row 2: Spinner -->
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <div id="spinnerContainer" style="display: none">
+                        <div id="spinner" class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div id="loadingText">Loading....</div>
+                    </div>
+                </div>
+            </div>
+
+            <ul id="results" class="list-unstyled song-list"></ul>
+
+            <nav>
+                <ul class="pagination" id="pagination"></ul>
+            </nav>
+        </div>
+
+        <script>
+            let allSongs = [];
+            let currentPage = 1;
+            const songsPerPage = 10;
+
+            const resultsContainer = document.getElementById("results");
+            const paginationContainer = document.getElementById("pagination");
+            const spinnerContainer = document.getElementById("spinnerContainer");
+
+            function renderSongs() {
+                resultsContainer.innerHTML = "";
+                const start = (currentPage - 1) * songsPerPage;
+                const end = start + songsPerPage;
+                const pageSongs = allSongs.slice(start, end);
+
+                pageSongs.forEach((song, index) => {
+                    const li = document.createElement("li");
+                    li.innerHTML = `
+                        <span>${start + index + 1}.</span> 
+                        <a href="${song.url}" target="_blank">${song.title}</a>
+                        <div class="text-muted small">Views: ${song.views.toLocaleString()} | Channel: ${song.channel}</div>
+                    `;
+                    resultsContainer.appendChild(li);
+                });
+            }
+
+            function renderPagination() {
+                paginationContainer.innerHTML = "";
+                const totalPages = Math.ceil(allSongs.length / songsPerPage);
+                for (let i = 1; i <= totalPages; i++) {
+                    const li = document.createElement("li");
+                    li.className = `page-item ${i === currentPage ? "active" : ""}`;
+                    li.innerHTML = `<button class="page-link">${i}</button>`;
+                    li.addEventListener("click", () => {
+                        currentPage = i;
+                        renderSongs();
+                        renderPagination();
+                    });
+                    paginationContainer.appendChild(li);
+                }
+            }
+
+            function fetchSongs(query = "English songs", maxResults = 50) {
+                spinnerContainer.style.display = "block";
+
+                const url = `/youtube-api/api/youtube-search?q=${encodeURIComponent(query)}&count=${maxResults}`;
+                fetch(url)
+                    .then((res) => res.json())
+                    .then((data) => {
+                        allSongs = data;
+                        sortSongs(document.getElementById("sortSelect").value);
+                        currentPage = 1;
+                        renderSongs();
+                        renderPagination();
+                        spinnerContainer.style.display = "none";
+                    });
+            }
+
+            function sortSongs(order) {
+                allSongs.sort((a, b) => (order === "asc" ? a.views - b.views : b.views - a.views));
+            }
+
+            // document.getElementById("searchInput").addEventListener("change", (e) => {
+            //     const maxResults = parseInt(document.getElementById("resultCount").value, 10) || 50;
+            //     fetchSongs(e.target.value, maxResults);
+            // });
+
+            document.getElementById("sortSelect").addEventListener("change", (e) => {
+                sortSongs(e.target.value);
+                renderSongs();
+            });
+
+            document.getElementById("loadBtn").addEventListener("click", () => {
+                const searchQuery = document.getElementById("searchInput").value.trim() || "English songs";
+                let maxResults = parseInt(document.getElementById("resultCount").value, 10);
+
+                // Sanity check for min/max
+                if (isNaN(maxResults) || maxResults < 50) maxResults = 50;
+                else if (maxResults > 500) maxResults = 500;
+
+                fetchSongs(searchQuery, maxResults);
+            });
+        </script>
+    </body>
+</html>
