@@ -1,3 +1,21 @@
 body {
     background-color: var(--body-bg);
 }
+
+/* Styling the drop zone */
+#dropZone {
+    border: 2px dashed #888; /* Dashed border to suggest 'drop here' */
+    padding: 40px;
+    text-align: center;
+    color: #444;
+    font-size: 18px;
+    transition: background 0.3s ease;
+    width: 50vw;
+    margin: 20px auto;
+}
+
+/* Highlight effect when a file is dragged over the drop zone */
+#dropZone.highlight {
+    background-color: #eef;
+    border-color: #00f;
+}
