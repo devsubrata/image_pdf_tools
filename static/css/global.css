@@ -1,5 +1,9 @@
 :root {
-    --body-bg: #e0f2f5;
+    --body-bg: #f5f8fc;
+    --text-color: #1a1a1a;
+    --accent: #0077b6;
+    --accent-light: #00b4d8;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 * {
@@ -7,28 +11,69 @@
     padding: 0;
     box-sizing: border-box;
 }
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
     background-color: var(--body-bg);
+    color: var(--text-color);
+    line-height: 1.6;
 }
 
-nav {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background-color: #222;
+/* Buttons */
+button {
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.25s ease;
 }
 
-nav a {
-    color: white;
-    margin-right: 1rem;
+button:hover {
+    background: linear-gradient(90deg, #0096c7, #48cae4);
+    transform: translateY(-2px);
+}
+
+/* All links */
+a,
+nav a,
+.dropdown-content a {
+    text-decoration: none; /* remove default underline */
+    color: var(--accent);
+    position: relative;
+}
+
+/* Remove underline on hover too */
+a:hover,
+nav a:hover,
+.dropdown-content a:hover {
     text-decoration: none;
 }
 
-nav a:hover {
-    text-decoration: underline;
+/* Custom animated underline */
+nav a::after,
+.dropdown-content a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--accent-light);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
 }
 
-main {
-    /* text-align: center; */
-    padding: 20px;
+nav a:hover::after,
+.dropdown-content a:hover::after {
+    width: 100%;
+}
+
+/* Links in content */
+a {
+    color: var(--accent);
+    text-decoration: none;
+    position: relative;
 }

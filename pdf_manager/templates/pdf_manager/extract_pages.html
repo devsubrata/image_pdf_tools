@@ -1,0 +1,77 @@
+{% extends 'index.html' %}
+<!-- C -->
+{% load static %}
+<!-- C -->
+{% block extra_css %}
+<link rel="stylesheet" href="{% static './pdf_manager/styles.css' %}" />
+{% endblock %}
+<!-- C -->
+{% block content %}
+<h2>Extract Pages</h2>
+<form id="extractForm" method="post" enctype="multipart/form-data">
+    {% csrf_token %} {{ form.as_p }}
+    <button type="submit">Extract</button>
+</form>
+<div id="msg" role="status" style="max-width: 600px; margin: 12px auto; text-align: center"></div>
+
+<script>
+    // --- Helper: get CSRF token ---
+    function getCookie(name) {
+        const v = document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)");
+        return v ? v.pop() : "";
+    }
+
+    const form = document.getElementById("extractForm");
+    const msg = document.getElementById("msg");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msg.textContent = "Processing...";
+        const fd = new FormData(form);
+
+        try {
+            const resp = await fetch(form.action || window.location.href, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+                body: fd,
+            });
+
+            if (!resp.ok) {
+                const text = await resp.text();
+                msg.textContent = "Server error. See console for details.";
+                console.error("Server response (not ok):", resp.status, text);
+                return;
+            }
+
+            // Get filename from Content-Disposition header
+            const cd = resp.headers.get("Content-Disposition") || "";
+            let filename = "extracted_pages.pdf";
+            const m = cd.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/);
+            if (m) filename = decodeURIComponent(m[1]);
+
+            // Download file
+            const blob = await resp.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+
+            // Reset form and message
+            form.reset();
+            msg.textContent = "✅ Extracted PDF downloaded successfully.";
+            setTimeout(() => {
+                msg.textContent = "";
+            }, 3000);
+        } catch (err) {
+            console.error(err);
+            msg.textContent = "Network error. See console for details.";
+        }
+    });
+</script>
+{% endblock %}

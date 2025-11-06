@@ -1,0 +1,73 @@
+{% extends 'index.html' %}
+<!--c-->
+{% load static %}
+<!--c-->
+{% block title %}Home | My Tools{% endblock %}
+<!--c-->
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'home/styles.css' %}" />
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+/>
+{% endblock %}
+<!--c-->
+{% block content %}
+<section class="tools-container">
+    <h2 class="text-center mb-4">All Tools</h2>
+
+    <div class="tools-grid">
+        <!-- PDF Extract Pages -->
+        <a href="{% url 'pdf_manager:extract' %}" class="tool-card">
+            <i class="fas fa-file-pdf fa-3x"></i>
+            <h5>Extract Pages</h5>
+            <p>Extract selected pages from a PDF, then merge those pages to a pdf file.</p>
+        </a>
+
+        <!-- Combine PDFs -->
+        <a href="{% url 'pdf_manager:combine' %}" class="tool-card">
+            <i class="fas fa-file-archive fa-3x"></i>
+            <h5>Combine PDFs</h5>
+            <p>Merge multiple PDFs with bookmarks.</p>
+        </a>
+
+        <!-- PDF to Image -->
+        <a href="{% url 'pdf_to_image:home' %}" class="tool-card">
+            <i class="fas fa-file-image fa-3x"></i>
+            <h5>PDF to Image</h5>
+            <p>Convert PDF pages into a single vertical image.</p>
+        </a>
+
+        <!-- Image Joiner -->
+        <a href="{% url 'image_joiner:home' %}" class="tool-card">
+            <i class="fas fa-image fa-3x"></i>
+            <h5>Join Images</h5>
+            <p>Combine multiple images to a vertically stacked image or export as PDF.</p>
+        </a>
+
+        <!-- Media Downloader -->
+        <a href="{% url 'media_downloader:home' %}" class="tool-card">
+            <i class="fas fa-download fa-3x"></i>
+            <h5>Media Downloader</h5>
+            <p>Download videos and audio from platforms.</p>
+        </a>
+
+        <!-- Top YouTube Songs -->
+        <a href="{% url 'youtube_api:top_youtube_songs' %}" class="tool-card">
+            <i class="fab fa-youtube fa-3x"></i>
+            <h5>Top YouTube Songs</h5>
+            <p>See trending songs across YouTube.</p>
+        </a>
+
+        <!-- Top Songs by Artist -->
+        <a href="{% url 'youtube_api:artist_songs' %}" class="tool-card">
+            <i class="fas fa-music fa-3x"></i>
+            <h5>Top Songs by Artist</h5>
+            <p>Get the most popular songs by artist.</p>
+        </a>
+    </div>
+</section>
+{% endblock %}

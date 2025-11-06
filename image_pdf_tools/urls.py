@@ -27,6 +27,7 @@ urlpatterns = [
     path('pdf-to-image/', include('pdf_to_image.urls')),
     path('media-downloader/', include('media_downloader.urls')),
     path('youtube-api/', include('youtube_api.urls')),
+    path('pdf/', include('pdf_manager.urls')),
 ]
 
 if settings.DEBUG:

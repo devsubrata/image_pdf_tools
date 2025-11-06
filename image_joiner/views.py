@@ -2,12 +2,12 @@ from django.shortcuts import render
 from PIL import Image
 import os
 from django.conf import settings
+from PyPDF2 import PdfReader, PdfWriter
 
 
 def upload_images(request):
     if request.method == 'POST':
         images = request.FILES.getlist('images')
-        # 'on' for whichever radio is selected
         conversion_type = request.POST.get('image-pdf')
 
         if not images:
@@ -21,12 +21,15 @@ def upload_images(request):
             })
 
         pil_images = []
+        filenames = []
         for image_file in images:
             try:
                 img = Image.open(image_file)
                 if img.mode != 'RGB':
                     img = img.convert('RGB')
                 pil_images.append(img)
+                # Store filename (without extension)
+                filenames.append(os.path.splitext(image_file.name)[0])
             except Exception:
                 return render(request, 'image_joiner/upload.html', {
                     'error_message': 'One or more files are not valid images.'
@@ -59,17 +62,38 @@ def upload_images(request):
             return render(request, 'image_joiner/upload.html', {
                 'joined_image_url': joined_image_url,
             })
-        # Save images as multi-page PDF
-        elif conversion_type == 'images_to_pdf':  
-            output_path = os.path.join(output_dir, 'joined_images.pdf')
+
+        # 🆕 Improved PDF with bookmarks
+        elif conversion_type == 'images_to_pdf':
+            temp_pdf_path = os.path.join(output_dir, 'temp_joined.pdf')
+            final_pdf_path = os.path.join(output_dir, 'joined_images.pdf')
+
+            # Step 1: Save images as a basic multi-page PDF
             first_image, rest_images = pil_images[0], pil_images[1:]
-            first_image.save(output_path, save_all=True, append_images=rest_images)
+            first_image.save(temp_pdf_path, save_all=True, append_images=rest_images)
+
+            # Step 2: Add bookmarks using PyPDF2
+            reader = PdfReader(temp_pdf_path)
+            writer = PdfWriter()
+
+            for i, page in enumerate(reader.pages):
+                writer.add_page(page)
+                # Add bookmark at page level using image name
+                writer.add_outline_item(filenames[i], i)
+
+            # Step 3: Write final PDF with bookmarks
+            with open(final_pdf_path, "wb") as f:
+                writer.write(f)
+
+            # Clean up temporary file
+            os.remove(temp_pdf_path)
 
             joined_pdf_url = settings.MEDIA_URL + 'joined/joined_images.pdf'
 
             return render(request, 'image_joiner/upload.html', {
                 'joined_pdf_url': joined_pdf_url,
             })
+
         else:
             return render(request, 'image_joiner/upload.html', {
                 'error_message': 'Invalid conversion type selected.'
@@ -77,21 +101,3 @@ def upload_images(request):
 
     # GET request
     return render(request, 'image_joiner/upload.html')
-
-
-# print("POST Data:", request.POST)
-# print("FILES Data:", request.FILES)
-# print("Conversion type:", request.POST.get('image-pdf'))
-# print("Uploaded images:", request.FILES.getlist('images'))
-# print("User Agent:", request.headers.get('User-Agent'))
-# print("All headers:", dict(request.headers))
-# print("GET Params:", request.GET)  # similar to req.query in Node.js
-# print("Raw Body:", request.body.decode('utf-8'))
-
-# def upload_images(request):
-#     print("Method:", request.method)
-#     print("POST data:", request.POST)
-#     print("FILES:", request.FILES)
-#     print("Headers:", request.headers)
-#     print("GET params:", request.GET)
-#     return HttpResponse("Check console")

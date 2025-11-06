@@ -12,125 +12,126 @@
 
 <!-- C -->
 {% block content %}
-<h2 class="mb-4 text-center">Upload Images to Join Vertically or to Create PDF</h2>
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Upload Images to Join Vertically or Create PDF</h2>
 
-<form method="post" enctype="multipart/form-data" class="mb-3">
-    {% csrf_token %}
-    <!-- Hidden file input -->
-    <input type="file" name="images" id="fileInput" multiple accept="image/*" style="display: none" />
-    <!-- Visible upload button -->
-    <div class="text-center">
-        <button type="button" id="uploadBtn" class="btn btn-primary mb-2">Upload Images</button>
-    </div>
-    <!-- Visible drop area -->
-    <div id="dropZone">Drag and drop files here or click to select</div>
-    <!-- Show selected files count -->
-    <div class="container">
-        <h4 id="fileCount" class="mb-3"></h4>
-        <div id="fileList" class="mb-3"></div>
-        <div class="radio-button-group" style="display: none; margin-bottom: 10px">
-            <div class="radio-btn"><input value="images_to_image" type="radio" name="image-pdf" id="images_to_image" />&nbsp;Images to image</div>
-            <div class="radio-btn"><input value="images_to_pdf" type="radio" name="image-pdf" id="images_to_pdf" />&nbsp;Images to pdf</div>
+    <form method="post" enctype="multipart/form-data" class="joiner-form p-4 rounded shadow">
+        {% csrf_token %}
+        <!-- Hidden file input -->
+        <input type="file" name="images" id="fileInput" multiple accept="image/*" style="display: none" />
+
+        <!-- Upload Button -->
+        <div class="text-center mb-3">
+            <button type="button" id="uploadBtn" class="btn btn-primary btn-lg"><i class="bi bi-upload"></i> Select Images</button>
         </div>
-        <!-- Submit button (hidden initially) -->
-        <button type="submit" id="joinBtn" class="btn btn-success" style="display: none">Join</button>
-    </div>
-</form>
 
-<!-- result from images to image conversion -->
-{% if joined_image_url %}
-<div id="display">
-    <div class="mb-4">
-        <button class="btn btn-warning" onclick="clearDisplay()">Clear</button>
+        <!-- Drop Zone -->
+        <div id="dropZone" class="p-4 rounded mb-3 text-center">Drag & Drop files here or click to select</div>
+
+        <!-- File count & list -->
+        <div id="fileInfo" class="mb-3">
+            <h5 id="fileCount" class="text-center"></h5>
+            <div id="fileList" class="list-group"></div>
+        </div>
+
+        <!-- Conversion Options -->
+        <div class="radio-button-group justify-content-center mb-3" style="display: none">
+            <div class="radio-btn mx-2"><input value="images_to_image" type="radio" name="image-pdf" id="images_to_image" /> Images to Image</div>
+            <div class="radio-btn mx-2"><input value="images_to_pdf" type="radio" name="image-pdf" id="images_to_pdf" /> Images to PDF</div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center">
+            <button type="submit" id="joinBtn" class="btn btn-success btn-lg" style="display: none">
+                <i class="bi bi-arrow-right-square"></i> Join
+            </button>
+        </div>
+    </form>
+
+    <!-- Result Display -->
+    {% if joined_image_url or joined_pdf_url %}
+    <div id="display" class="mt-4 p-4 rounded shadow text-center">
+        <button class="btn btn-warning mb-3" onclick="clearDisplay()"><i class="bi bi-x-circle"></i> Clear</button>
+
+        {% if joined_image_url %}
+        <h3>Joined Image</h3>
+        <a href="{{ joined_image_url }}" download="joined_image.jpg" class="btn btn-outline-secondary mb-3">
+            <i class="bi bi-download"></i> Download Image
+        </a>
+        <img src="{{ joined_image_url }}" alt="Joined Image" class="img-fluid rounded" />
+        {% endif %} {% if joined_pdf_url %}
+        <h3 class="mt-3">Created PDF</h3>
+        <a href="{{ joined_pdf_url }}" target="_blank" class="btn btn-outline-secondary"> <i class="bi bi-file-earmark-pdf"></i> Download PDF </a>
+        {% endif %}
     </div>
-    <!-- Download button -->
-    <a href="{{ joined_image_url }}" download="joined_image.jpg" class="btn btn-outline-secondary mb-3"> Download Joined Image </a>
-    <h3>Joined Image:</h3>
-    <img src="{{ joined_image_url }}" alt="Joined Image" class="img-fluid mb-3" />
+    {% endif %}
+
+    <!-- Error Message -->
+    {% if error_message %}
+    <div class="alert alert-danger mt-3 text-center" role="alert">{{ error_message }}</div>
+    {% endif %}
 </div>
-{% endif %}
-
-<!-- result from images to pdf conversion -->
-{% if joined_pdf_url %}
-<div id="display">
-    <div class="mb-4">
-        <button class="btn btn-warning" onclick="clearDisplay()">Clear</button>
-    </div>
-    <p>PDF created successfully: <a href="{{ joined_pdf_url }}" target="_blank">Download PDF</a></p>
-</div>
-{% endif %}
-
-<!-- Error Message -->
-{% if error_message %}
-<div class="alert alert-danger" role="alert">{{ error_message }}</div>
-{% endif %}
 
 <script>
     const uploadBtn = document.getElementById("uploadBtn");
     const fileInput = document.getElementById("fileInput");
     const fileCount = document.getElementById("fileCount");
+    const fileList = document.getElementById("fileList");
     const joinBtn = document.getElementById("joinBtn");
     const radioBtnsDiv = document.querySelector(".radio-button-group");
     const dropZone = document.getElementById("dropZone");
 
-    // When upload button clicked, trigger file input click
     uploadBtn.addEventListener("click", () => fileInput.click());
     dropZone.addEventListener("click", () => fileInput.click());
 
-    // Highlight the drop zone when dragging files over it
-    ["dragenter", "dragover"].forEach((eventName) => {
-        dropZone.addEventListener(eventName, (e) => {
-            e.preventDefault(); // Prevent default browser behavior (e.g., open file)
-            e.stopPropagation(); // Stop event bubbling
-            dropZone.classList.add("highlight"); // Add highlight effect
-        });
-    });
-
-    // Remove highlight when dragging leaves the drop zone or when dropping
-    ["dragleave", "drop"].forEach((eventName) => {
-        dropZone.addEventListener(eventName, (e) => {
+    // Drag & Drop effects
+    ["dragenter", "dragover"].forEach((evt) => {
+        dropZone.addEventListener(evt, (e) => {
             e.preventDefault();
             e.stopPropagation();
-            dropZone.classList.remove("highlight"); // Remove highlight effect
+            dropZone.classList.add("highlight");
+        });
+    });
+    ["dragleave", "drop"].forEach((evt) => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove("highlight");
         });
     });
 
-    // Show selected files count and toggle Join button visibility
-    fileInput.addEventListener("change", () => {
-        const files = fileInput.files;
-        handleFiles(files);
-    });
-
-    // Handle files dropped onto the drop zone
+    // Handle files
+    fileInput.addEventListener("change", () => handleFiles(fileInput.files));
     dropZone.addEventListener("drop", (e) => {
-        const files = e.dataTransfer.files; // Get the dropped files
-        handleFiles(files); // Handle them
+        const files = e.dataTransfer.files;
+        fileInput.files = files;
+        handleFiles(files);
     });
 
     function handleFiles(files) {
         if (files.length > 0) {
-            // Create a list of file names
-            let listHtml = '<ul class="list-group">';
-            for (let i = 0; i < files.length; i++) {
-                listHtml += `<li class="list-group-item">${files[i].name}</li>`;
+            let listHtml = "";
+            for (let f of files) {
+                listHtml += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>${f.name}</span>
+                            <span class="badge bg-primary rounded-pill">${(f.size / 1024).toFixed(1)} KB</span>
+                         </li>`;
             }
-            listHtml += "</ul>";
-            fileCount.textContent = files.length + (files.length === 1 ? " file selected" : " files selected");
-
             fileList.innerHTML = listHtml;
-            joinBtn.style.display = "inline-block"; // Show the Join button
-            radioBtnsDiv.style.display = "block";
+            fileCount.textContent = `${files.length} file${files.length > 1 ? "s" : ""} selected`;
+            joinBtn.style.display = "inline-block";
+            radioBtnsDiv.style.display = "flex";
         } else {
             fileList.innerHTML = "";
-            joinBtn.style.display = "none"; // Hide Join button if no files selected
+            fileCount.textContent = "";
+            joinBtn.style.display = "none";
+            radioBtnsDiv.style.display = "none";
         }
     }
 
     function clearDisplay() {
         const displaySection = document.querySelector("#display");
-        if (displaySection) {
-            displaySection.remove();
-        }
+        if (displaySection) displaySection.remove();
     }
 </script>
 {% endblock %}
