@@ -9,16 +9,19 @@
 {% block content %}
 <h2>Combine PDFs</h2>
 
-<form id="combineForm" method="post" enctype="multipart/form-data" novalidate>
+<form id="combineForm" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <p>
         <label for="id_pdf_files">Upload PDFs:</label><br />
         <input type="file" name="pdf_files" id="id_pdf_files" multiple required />
     </p>
-
+    <!-- show file list -->
+    <div id="fileListContainer" style="margin-bottom: 15px">
+        <ol id="fileList" style="padding-left: 20px"></ol>
+    </div>
     <p>
         <label>
-            <input type="checkbox" name="add_bookmarks" />
+            <input type="checkbox" name="add_bookmarks" checked />
             Add bookmarks from filenames?
         </label>
     </p>
@@ -76,6 +79,7 @@
 
             // Reset form and show success
             form.reset();
+            document.getElementById("fileList").innerHTML = "";
             msg.textContent = "✅ Combined PDF downloaded and form reset.";
             setTimeout(() => {
                 msg.textContent = "";
@@ -84,6 +88,19 @@
             console.error(err);
             msg.textContent = "Network error. See console for details.";
         }
+    });
+
+    document.getElementById("id_pdf_files").addEventListener("change", function (event) {
+        const fileList = document.getElementById("fileList");
+        fileList.innerHTML = ""; // Clear old list
+
+        const files = Array.from(event.target.files);
+
+        files.forEach((file, index) => {
+            const li = document.createElement("li");
+            li.textContent = file.name;
+            fileList.appendChild(li);
+        });
     });
 </script>
 {% endblock %}

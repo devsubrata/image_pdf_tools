@@ -8,35 +8,66 @@ from PyPDF2 import PdfReader, PdfWriter
 import fitz  # PyMuPDF
 
 
+from django.shortcuts import render
+from django.http import FileResponse
+from io import BytesIO
+from PyPDF2 import PdfReader, PdfWriter
+from .forms import ExtractPagesForm
+
+
 def extract_pages(request):
     if request.method == "POST":
         form = ExtractPagesForm(request.POST, request.FILES)
-        print(form)
-        print(form.is_valid())
-
         if form.is_valid():
             pdf_file = request.FILES['pdf_file']
-            page_range = form.cleaned_data['page_range']
+            page_range = form.cleaned_data['page_range'].strip()
+            page_type = form.cleaned_data['page_type']
 
             reader = PdfReader(pdf_file)
             writer = PdfWriter()
+            total_pages = len(reader.pages)
 
-            pages = []
-            for part in page_range.split(','):
-                if '-' in part:
-                    start, end = map(int, part.split('-'))
-                    pages.extend(range(start, end + 1))
-                else:
-                    pages.append(int(part))
+            # -----------------------------
+            # 1️⃣ Determine which pages to extract
+            # -----------------------------
+            pages = set()
 
-            for p in pages:
-                if 1 <= p <= len(reader.pages):
+            if page_range:
+                # Case 1: User entered specific page numbers/ranges
+                for part in page_range.split(','):
+                    part = part.strip()
+                    if '-' in part:
+                        try:
+                            start, end = map(int, part.split('-'))
+                            pages.update(range(start, end + 1))
+                        except ValueError:
+                            continue  # Skip invalid ranges
+                    elif part.isdigit():
+                        pages.add(int(part))
+            else:
+                # Case 2: page_range empty → use dropdown
+                if page_type == "odd":
+                    pages = {i for i in range(1, total_pages + 1) if i % 2 == 1}
+                elif page_type == "even":
+                    pages = {i for i in range(1, total_pages + 1) if i % 2 == 0}
+                else:  # "all"
+                    pages = set(range(1, total_pages + 1))
+
+            # -----------------------------
+            # 2️⃣ Extract the selected pages
+            # -----------------------------
+            for p in sorted(pages):
+                if 1 <= p <= total_pages:
                     writer.add_page(reader.pages[p - 1])
 
+            # -----------------------------
+            # 3️⃣ Return as downloadable PDF
+            # -----------------------------
             output = BytesIO()
             writer.write(output)
             output.seek(0)
             return FileResponse(output, as_attachment=True, filename="extracted_pages.pdf")
+
     else:
         form = ExtractPagesForm()
 
