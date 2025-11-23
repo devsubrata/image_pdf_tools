@@ -1,0 +1,59 @@
+/* Keep input actionable: don't use display:none */
+.hidden {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* basic drop-zone visuals */
+.drop-zone {
+    border: 2px dashed #4a90e2;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #4a90e2;
+}
+.drop-zone.dragover {
+    background-color: #eef6ff;
+}
+li {
+    border: 1px solid #aaa;
+    border-bottom: none;
+    padding: 0 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#fileList {
+    list-style-type: none;
+}
+
+#fileList li:first-child {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+#fileList li:last-child {
+    border-bottom: 1px solid #aaa;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.list-item {
+    display: flex;
+    align-items: flex-start;
+    max-width: 500px;
+}
+
+.list-item span:first-child {
+    color: blue;
+    font-weight: bold;
+}
+
+.list-btns span {
+    cursor: pointer;
+}

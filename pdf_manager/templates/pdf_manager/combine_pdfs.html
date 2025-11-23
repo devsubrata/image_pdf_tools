@@ -4,6 +4,7 @@
 <!-- C -->
 {% block extra_css %}
 <link rel="stylesheet" href="{% static './pdf_manager/styles.css' %}" />
+<link rel="stylesheet" href="{% static './pdf_manager/combine_pdf.css' %}" />
 {% endblock %}
 <!-- C -->
 {% block content %}
@@ -13,11 +14,11 @@
     {% csrf_token %}
     <p>
         <label for="id_pdf_files">Upload PDFs:</label><br />
-        <input type="file" name="pdf_files" id="id_pdf_files" multiple required />
+        <input type="file" name="pdf_files" id="id_pdf_files" multiple accept="application/pdf" />
     </p>
     <!-- show file list -->
     <div id="fileListContainer" style="margin-bottom: 15px">
-        <ol id="fileList" style="padding-left: 20px"></ol>
+        <ul id="fileList"></ul>
     </div>
     <p>
         <label>
@@ -27,6 +28,7 @@
     </p>
 
     <button type="submit">Combine</button>
+    <span id="clearBtn">Clear</span>
 </form>
 
 <div id="msg" role="status" style="max-width: 600px; margin: 12px auto; text-align: center"></div>
@@ -38,13 +40,25 @@
         return v ? v.pop() : "";
     }
 
+    let allFiles = [];
     const form = document.getElementById("combineForm");
     const msg = document.getElementById("msg");
+    const fileList = document.getElementById("fileList");
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (allFiles.length === 0) {
+            msg.style.color = "red";
+            msg.textContent = "No file uploaded!";
+            return;
+        }
+
         msg.textContent = "Processing...";
+
         const fd = new FormData(form);
+        allFiles.forEach((file) => {
+            fd.append("pdf_files", file);
+        });
 
         try {
             const resp = await fetch(form.action || window.location.href, {
@@ -79,7 +93,8 @@
 
             // Reset form and show success
             form.reset();
-            document.getElementById("fileList").innerHTML = "";
+            clearAllUploads();
+
             msg.textContent = "✅ Combined PDF downloaded and form reset.";
             setTimeout(() => {
                 msg.textContent = "";
@@ -91,16 +106,73 @@
     });
 
     document.getElementById("id_pdf_files").addEventListener("change", function (event) {
-        const fileList = document.getElementById("fileList");
-        fileList.innerHTML = ""; // Clear old list
+        const newFiles = Array.from(event.target.files); // newly selected files
+        // Append new files to the global list
+        allFiles = allFiles.concat(newFiles);
+        loadFiles(allFiles);
+        event.target.value = "";
+        msg.textContent = "";
+        msg.style.color = "green";
+    });
 
-        const files = Array.from(event.target.files);
-
-        files.forEach((file, index) => {
+    function loadFiles(files) {
+        // Re-render file list
+        fileList.innerHTML = "";
+        allFiles.forEach((file, i) => {
             const li = document.createElement("li");
-            li.textContent = file.name;
+            li.dataset.index = i;
+            li.innerHTML = `
+                <div class="list-item">
+                    <span>${i + 1}.&nbsp;</span>
+                    <span>${file.name}</span>
+                </div>
+                <div class="list-btns">
+                    <span class="move-up">⬆️</span>
+                    <span class="move-down">⬇️</span>
+                    <span class="delete">❌</span>
+                </div>
+            `;
             fileList.appendChild(li);
         });
-    });
+        // Move Up
+        document.querySelectorAll(".move-up").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const li = btn.closest("li");
+                const index = parseInt(li.dataset.index);
+                if (index > 0) {
+                    // Swap in array
+                    [allFiles[index - 1], allFiles[index]] = [allFiles[index], allFiles[index - 1]];
+                    loadFiles(allFiles);
+                }
+            });
+        });
+        // Move Down
+        document.querySelectorAll(".move-down").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const li = btn.closest("li");
+                const index = parseInt(li.dataset.index);
+                if (index < allFiles.length - 1) {
+                    // Swap in array
+                    [allFiles[index + 1], allFiles[index]] = [allFiles[index], allFiles[index + 1]];
+                    loadFiles(allFiles);
+                }
+            });
+        });
+        // Delete
+        document.querySelectorAll(".delete").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const li = btn.closest("li");
+                const index = parseInt(li.dataset.index);
+                allFiles.splice(index, 1); // remove file
+                loadFiles(allFiles);
+            });
+        });
+    }
+
+    function clearAllUploads() {
+        fileList.innerHTML = "";
+        allFiles = [];
+    }
+    document.getElementById("clearBtn").onclick = clearAllUploads;
 </script>
 {% endblock %}
