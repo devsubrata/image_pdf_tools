@@ -1,11 +1,13 @@
 :root {
-    --bg-color: #121212;
-    --card-bg: #1e1e2f;
+    --bg-color: #081417;
+    --card-bg: #0e2025;
     --card-hover: #29293f;
+    --shadow-glow: 0 0 20px hsla(172, 66%, 50%, 0.3);
     --primary-color: #00d8ff;
     --icon-color: #eee;
     --text-color: #e0e0e0;
     --secondary-text: #bbbbbb;
+    --border-color: #2bd4bd;
 }
 
 body {
@@ -20,7 +22,19 @@ body {
 }
 
 .tools-container h2 {
-    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: hsla(192, 35%, 15%, 0.5);
+    color: var(--primary-color);
+    border-radius: 0.5rem;
+    border-left: 4px solid var(--border-color);
+    border-right: 4px solid var(--border-color);
+    margin: 1.5rem auto;
+    max-width: 1200px;
+    min-width: 220px;
 }
 
 .tools-grid {
@@ -38,19 +52,21 @@ body {
     padding: 1.5rem;
     text-decoration: none;
     color: var(--text-color);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    transition: all 0.3s ease;
     width: 100%;
     max-width: 250px;
     display: flex;
     flex-direction: column;
     align-items: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgb(34 53 57 / 30%);
 }
 
 .tool-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-    background: var(--card-hover);
+    border-color: hsla(172, 66%, 50%, 0.5);
+    box-shadow: var(--shadow-glow);
 }
 
 .tool-card img {
@@ -68,11 +84,6 @@ body {
 .tool-card p {
     font-size: 0.9rem;
     color: var(--secondary-text);
-}
-
-/* Center heading */
-.tools-container h2 {
-    color: var(--primary-color);
 }
 
 /* Font Awesome icons inside tool cards */

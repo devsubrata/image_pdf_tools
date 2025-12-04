@@ -1,20 +1,33 @@
 /* ------------------------------
    General body styles
 --------------------------------*/
+:root {
+    --border-color: #2bd4bd;
+    --primary-color: #00d8ff;
+    --bg-color: #081417;
+}
+
 body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f7f8fa;
+    background-color: var(--bg-color);
     color: #333;
     margin: 0;
     padding: 0;
 }
 
 h2 {
-    color: #2c3e50;
-    margin-top: 40px;
-    margin-bottom: 20px;
-    font-size: 1.8rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: hsla(192, 35%, 15%, 0.5);
+    color: var(--primary-color);
+    border-radius: 0.5rem;
+    border-left: 4px solid var(--border-color);
+    border-right: 4px solid var(--border-color);
+    margin: 1.5rem auto;
+    max-width: 800px;
 }
 
 /* ------------------------------
