@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'pdf_to_image',
     'media_downloader',
     'youtube_api',
-    'pdf_manager'
+    'pdf_manager',
+    'subtitle_extractor',
 ]
 
 MIDDLEWARE = [

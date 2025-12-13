@@ -1,0 +1,127 @@
+{% extends 'index.html' %} {% load static %} {% block title %} Subtitle Extractor {% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'subtitle_extractor/styles.css' %}" />
+{% endblock %} {% block content %}
+<h1>Extract Subtitles from Media</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label>Upload Media:</label>
+    <input type="file" name="media" accept="video/*,audio/*" />
+
+    <br /><br />
+
+    <label>YouTube Video ID (optional):</label>
+    <input type="text" name="youtube_id" placeholder="e.g. dQw4w9WgXcQ" />
+
+    <p style="color: #73b4b6ff; font-size: 13px">If YouTube ID is provided, uploaded file will be ignored.</p>
+
+    <br />
+
+    <label>Model:</label>
+    <select name="model">
+        <option value="tiny">Tiny (Fastest)</option>
+        <option value="base" selected>Base (Recommended)</option>
+        <option value="small">Small (More Accurate)</option>
+        <option value="medium">Medium (Slow)</option>
+    </select>
+
+    <br /><br />
+
+    <label>Subtitle Format:</label>
+    <select name="format">
+        <option value="srt_txt">SRT & TXT</option>
+        <option value="vtt">VTT</option>
+        <option value="json">JSON</option>
+    </select>
+
+    <br /><br />
+
+    <button type="submit">Extract Subtitles</button>
+</form>
+<div id="spinner-container" style="display: none; flex-direction: column; align-items: center; margin: 1rem">
+    <div class="spinner"></div>
+</div>
+
+{% if subtitle_urls %}
+<div class="clr-div">
+    <button onclick="clearDisplay()">Clear</button>
+</div>
+<div id="display" class="workspace">
+    <!-- LEFT: MEDIA PLAYER -->
+    <div class="media-panel">
+        <h3>🎧 Media Player {% if is_youtube %}- {{ title }}{% endif %}</h3>
+
+        <video controls style="height: 500px">
+            <source src="{{ media_url }}" />
+        </video>
+
+        {% if is_youtube %}
+        <br /><br />
+        <a href="{{ media_url }}" download class="download-btn">Download Video</a>
+        {% endif %}
+    </div>
+
+    <!-- RIGHT: SUBTITLE VIEWER -->
+    <div class="subtitle-panel">
+        <div class="subtitle-header">
+            <h3>📜 Subtitles</h3>
+            {% if multi_format %}
+            <div class="toggle-group">
+                <button type="button" class="toggle-btn active" onclick="switchSubtitle('srt')">SRT</button>
+                <button type="button" class="toggle-btn" onclick="switchSubtitle('txt')">TXT</button>
+            </div>
+            {% endif %}
+            <div>
+                {% for fmt, url in subtitle_urls.items %}
+                <a href="{{ url }}" download class="download-btn">Download {{ fmt|upper }} </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% if multi_format %}
+        <pre id="subtitle-srt" class="subtitle-viewer">{{ subtitle_texts.srt }}</pre>
+        <pre id="subtitle-txt" class="subtitle-viewer hidden">{{ subtitle_texts.txt }}</pre>
+        {% else %} {% for text in subtitle_texts.values %}
+        <pre class="subtitle-viewer">{{ text }}</pre>
+        {% endfor %} {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function (e) {
+        const fileInput = form.querySelector('input[name="media"]');
+        const ytInput = form.querySelector('input[name="youtube_id"]');
+
+        if (!fileInput.files.length && !ytInput.value.trim()) {
+            e.preventDefault();
+            alert("Please provide either a media file or a YouTube Video ID.");
+            return false;
+        }
+        document.getElementById("spinner-container").style.display = "flex";
+    });
+    function clearDisplay() {
+        const display = document.getElementById("display");
+        if (display) display.remove();
+        document.querySelector(".clr-div").remove();
+    }
+    function switchSubtitle(type) {
+        const srt = document.getElementById("subtitle-srt");
+        const txt = document.getElementById("subtitle-txt");
+
+        const buttons = document.querySelectorAll(".toggle-btn");
+        buttons.forEach((btn) => btn.classList.remove("active"));
+
+        if (type === "srt") {
+            srt.classList.remove("hidden");
+            txt.classList.add("hidden");
+            buttons[0].classList.add("active");
+        } else {
+            txt.classList.remove("hidden");
+            srt.classList.add("hidden");
+            buttons[1].classList.add("active");
+        }
+    }
+</script>
+{% endblock %}

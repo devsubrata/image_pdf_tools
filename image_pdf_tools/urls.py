@@ -28,6 +28,7 @@ urlpatterns = [
     path('media-downloader/', include('media_downloader.urls')),
     path('youtube-api/', include('youtube_api.urls')),
     path('pdf/', include('pdf_manager.urls')),
+    path('subtitles/', include('subtitle_extractor.urls')),
 ]
 
 if settings.DEBUG:
